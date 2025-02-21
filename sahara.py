@@ -39,18 +39,20 @@ class MoonveilFaucet:
         self,
         rpc: str = "https://faucet.testnet.moonveil.gg/api/claim",
         address: str="",
-        proxy=None
+        proxy=None,
+        agent=None
     ):
         self.rpc = rpc
         self.address = address
         self.proxy=proxy
+        self.agent=agent
     def classic(self):
         url = f'{self.rpc}'
         json_data = {
             'address': self.address
         }
         headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0',
+        'User-Agent': self.agent,
         'Accept': '*/*',
         'Accept-Language': 'en-US,en;q=0.5',
         'Accept-Encoding': 'gzip, deflate, br, zstd',
@@ -71,14 +73,16 @@ class MoonveilFaucet:
 
 
 file = open('proxys')
+prox = file.readline()
 
 @root.message_handler(content_types='text')
 def address(message):
     try:
-        prox = file.readline()
+        file = open('useragent')
+        agent = file.readline()
         message_id = message.message_id
         address = message.text
-        result = MoonveilFaucet(proxy=prox, address=str(address))
+        result = MoonveilFaucet(proxy=prox, address=str(address), agent=str(agent))
         more = result.classic()
         if more != 'invalid address':
             root.reply_to(message, f"{more}")
