@@ -39,20 +39,18 @@ class MoonveilFaucet:
         self,
         rpc: str = "https://faucet.testnet.moonveil.gg/api/claim",
         address: str="",
-        proxy=None,
-        agent=None
+        proxy=None
     ):
         self.rpc = rpc
         self.address = address
         self.proxy=proxy
-        self.agent=agent
     def classic(self):
         url = f'{self.rpc}'
         json_data = {
             'address': self.address
         }
         headers = {
-        'User-Agent': self.agent,
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0',
         'Accept': '*/*',
         'Accept-Language': 'en-US,en;q=0.5',
         'Accept-Encoding': 'gzip, deflate, br, zstd',
@@ -74,18 +72,21 @@ class MoonveilFaucet:
 
 file = open('proxys')
 prox = file.readline()
-
 @root.message_handler(content_types='text')
 def address(message):
     try:
-        file = open('useragent')
-        agent = file.readline()
         message_id = message.message_id
         address = message.text
-        result = MoonveilFaucet(proxy=prox, address=str(address), agent=str(agent))
+        result = MoonveilFaucet(proxy=prox, address=str(address))
         more = result.classic()
         if more != 'invalid address':
-            root.reply_to(message, f"{more}")
+            if more.split()[0] == "Txhash:":
+                root.reply_to(message, f"Токены успешно отправлены на ваш адрес, hash транзакции:{more.split()[1]}")
+            if more.split()[0] == "You":
+                root.reply_to(message, f"Вы уже отправляли сегордня токены, пожалуйста вернитесь через {more.split()[8]} и заного их запросите")
+            else:
+                root.reply_to(message, f"Ошибка крана, причина: {more}")
+
         else:
             pass
 
