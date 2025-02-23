@@ -80,7 +80,7 @@ def address(message):
         if more != 'invalid address':
             if more.split()[0] == "Txhash:":
                 root.reply_to(message, f"Токены успешно отправлены на ваш адрес, hash транзакции:{more.split()[1]}")
-            if more.split()[0] == "You":
+            elif more.split()[0] == "You":
                 root.reply_to(message, f"Вы уже отправляли сегодня токены, пожалуйста вернитесь через {more.split()[8]} и заново их запросите")
             else:
                 root.reply_to(message, f"Ошибка крана, причина: {more}")
