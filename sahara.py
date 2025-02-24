@@ -82,6 +82,8 @@ def address(message):
                 root.reply_to(message, f"Токены успешно отправлены на ваш адрес, hash транзакции:{more.split()[1]}")
             elif more.split()[0] == "You":
                 root.reply_to(message, f"Вы уже отправляли сегодня токены, пожалуйста вернитесь через {more.split()[8]} и заново их запросите")
+            elif more.split()[0] == "Request":
+                pass
             else:
                 root.reply_to(message, f"Ошибка крана, причина: {more}")
 
