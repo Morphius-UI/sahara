@@ -12,18 +12,18 @@ import calendar
 import threading
 
 
-Token = '7854708699:AAEXpUSOfUYyLrqb0X9X1zx65KCDQkKn1hc'
+Token = '7734870298:AAHcEohsz-0fdZRKndROLTLUcnWIS1vwuA0'
 root = telebot.TeleBot(Token)
 
-# chat_member = root.get_chat_member(message_id, message_id).user.username
-
+chat = -1002364115755
+thread_id = 12494
 
 k = 0
 db = SqliteDatabase('fof.sqlite')
 
 def randomfr(username):
     lista = [f'👍 @{username}, твой лимит восстановлен – запрашивай токены снова.',f'✨ @{username}, лимит пополнен, можешь снова брать токены.',f'✅ @{username}, лимит обновлён, жми на запрос токенов.',f'🚀 @{username}, лимит восстановлен – пора за новыми токенами!',f'🎉 @{username}, лимит токенов вернулся, запроси их прямо сейчас.']
-    return lista[random.randrange(0, len(lista)+1)]
+    return lista[random.randrange(0, len(lista))]
 
 class MoonveilFaucet:
     def __init__(
@@ -75,9 +75,18 @@ class research:
 
     def delandcreat(userId):
         point = research.reserch_user(userId)
-        q = Person.delete().where(Person.userId == userId)
-        q.execute()
-        Person.create(userId=userId, lastsend=calendar.timegm(time.gmtime()),nextsend=calendar.timegm(time.gmtime()) + 86400, point=point+1)
+        obj = Person.get(Person.userId == userId)
+        obj.delete_instance()
+        Person.create(userId=userId, lastsend=calendar.timegm(time.gmtime()),
+                                  nextsend=calendar.timegm(time.gmtime()) + 86400, point=point+1)
+
+    def povrors(userId):
+        h = []
+        for person in Person.select().where(Person.userId==userId):
+            h.append(person.userId)
+            if len(h) > 1:
+                obj = Person.get(Person.userId == userId)
+                obj.delete_instance()
 
 
 class Person(Model):
@@ -138,7 +147,6 @@ def leaderboard1(message):
 
 def print_numbers():
     while True:
-        print(calendar.timegm(time.gmtime()))
         for user in Timeframe.select():
             userId = user.userId
             print(user.nextsend)
@@ -146,7 +154,7 @@ def print_numbers():
             if user.nextsend <= calendar.timegm(time.gmtime()):
                 UsrInfo = root.get_chat_member(userId, userId).user.username
                 text = randomfr(UsrInfo)
-                root.send_message(userId, f"{text}")
+                root.send_message(chat, f"{text}", message_thread_id=thread_id)
                 q = Timeframe.delete().where(Timeframe.userId == userId)
                 q.execute()
         time.sleep(60)
@@ -157,8 +165,7 @@ thread.start()
 
 file = open('proxys')
 prox = file.readline()
-
-db.connect()
+db.create_tables([Person, Timeframe])
 
 
 
@@ -166,13 +173,14 @@ db.connect()
 def leaderboard2(message):
     try:
         h = leaderboard1(message)
-        root.reply_to(message, f'🏆<b>Таблица лидеров:</b>\n{h}', parse_mode='HTML')
+        root.reply_to(message, f'🔥<b>Таблица лидеров:</b>\n{h}', parse_mode='HTML')
     except Exception as e:
         print(e)
 
 @root.message_handler(content_types=['text'])
 def address(message):
     try:
+        global chat_id
         chat_id = message.chat.id
         print(chat_id)
         message_id = message.from_user.id
@@ -180,25 +188,29 @@ def address(message):
         address = message.text
         result = MoonveilFaucet(proxy=prox, address=str(address))
         more = result.classic()
-        Person.create(userId=int(message_id), lastsend=calendar.timegm(time.gmtime()),
-                      nextsend=calendar.timegm(time.gmtime()) + 86400, point=1)
         if more != 'invalid address':
             if more.split()[0] == "Txhash:":
+                print(research.reserch_user(message_id))
                 if research.reserch_user(message_id) == None:
                     Person.create(userId=int(message_id), lastsend=calendar.timegm(time.gmtime()),
                                   nextsend=calendar.timegm(time.gmtime()) + 86400, point=1)
                     Timeframe.create(lastsend=calendar.timegm(time.gmtime()),
                                      nextsend=calendar.timegm(time.gmtime()) + 86400, userId=int(message_id))
-                    root.reply_to(message, f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\n Транзакция:<a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>", parse_mode='HTML')
+                    research.povrors(message_id)
+                    root.reply_to(message, f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\n Транзакция: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>", parse_mode='HTML')
 
                 else:
                     if research.nextdata(message_id) <= calendar.timegm(time.gmtime()):
                         research.delandcreat(message_id)
+                        research.povrors(message_id)
+                        Timeframe.create(lastsend=calendar.timegm(time.gmtime()),
+                                         nextsend=calendar.timegm(time.gmtime()) + 86400, userId=int(message_id))
                         root.reply_to(message,
-                                      f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\n Транзакция:<a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>", parse_mode='HTML')
+                                      f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\n Транзакция: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>", parse_mode='HTML')
                     else:
+                        research.povrors(message_id)
                         root.reply_to(message,
-                                      f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\n Транзакция:<a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>", parse_mode='HTML')
+                                      f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\n Транзакция: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>", parse_mode='HTML')
 
 
 
