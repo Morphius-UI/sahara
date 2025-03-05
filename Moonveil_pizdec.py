@@ -15,8 +15,9 @@ import threading
 Token = '7734870298:AAHcEohsz-0fdZRKndROLTLUcnWIS1vwuA0'
 root = telebot.TeleBot(Token)
 
-chat = -1002364115755
-thread_id = 12494
+# chat_member = root.get_chat_member(message_id, message_id).user.username
+chat = -1002448845652
+thread_id = 109
 
 k = 0
 db = SqliteDatabase('fof.sqlite')
@@ -123,22 +124,8 @@ def leaderboard1(message):
             kol = person.point
             after +=1
             continue
-        if person.point == 1:
-            f= f+ str(k)+ f'. @{UsrInfo} — ' +str(person.point) + ' запрос.\n'
-        elif person.point == 12:
-            f+= str(k)+ f'. @{UsrInfo} — ' +str(person.point) + ' запросов.\n'
-        elif person.point == 13:
-            f+= str(k)+ f'. @{UsrInfo} — ' +str(person.point) + ' запросов.\n'
-        elif person.point == 14:
-            f+= str(k)+ f'. @{UsrInfo} — ' +str(person.point) + ' запросов.\n'
-        elif person.point % 10==2:
-            f+= str(k)+ f'. @{UsrInfo} — ' +str(person.point) + ' запроса.\n'
-        elif person.point % 10==3:
-            f+= str(k)+ f'. @{UsrInfo} — ' +str(person.point) + ' запроса.\n'
-        elif person.point % 10==4:
-            f+= str(k)+ f'. @{UsrInfo} — ' +str(person.point) + ' запроса.\n'
-        else:
-            f = f + str(k) + f'. @{UsrInfo} — ' + str(person.point) + ' запросов.\n'
+        f= f+ str(k)+ f'. @{UsrInfo} — ' +str(person.point) + ' запрос.\n'
+
     if after != 0:
         f+= f'+{str(after)} пользователей с {kol} запросами'
         return f
@@ -197,7 +184,7 @@ def address(message):
                     Timeframe.create(lastsend=calendar.timegm(time.gmtime()),
                                      nextsend=calendar.timegm(time.gmtime()) + 86400, userId=int(message_id))
                     research.povrors(message_id)
-                    root.reply_to(message, f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\n Транзакция: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>", parse_mode='HTML')
+                    root.reply_to(message, f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\nТранзакция: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>\n\n<b>💎Запросов:{str(research.reserch_user(message_id))}</b>", parse_mode='HTML')
 
                 else:
                     if research.nextdata(message_id) <= calendar.timegm(time.gmtime()):
@@ -206,11 +193,11 @@ def address(message):
                         Timeframe.create(lastsend=calendar.timegm(time.gmtime()),
                                          nextsend=calendar.timegm(time.gmtime()) + 86400, userId=int(message_id))
                         root.reply_to(message,
-                                      f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\n Транзакция: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>", parse_mode='HTML')
+                                      f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\nТранзакция: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>\n\n<b>💎Запросов:{str(research.reserch_user(message_id))}</b>", parse_mode='HTML')
                     else:
                         research.povrors(message_id)
                         root.reply_to(message,
-                                      f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\n Транзакция: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>", parse_mode='HTML')
+                                      f"<b>✅ Токены успешно отправлены на указанный адрес!</b>\n\nТранзакция: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>\n\n<b>💎Запросов:{str(research.reserch_user(message_id))}</b>", parse_mode='HTML')
 
 
 
