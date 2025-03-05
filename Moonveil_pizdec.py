@@ -1,6 +1,5 @@
 import requests
 import telebot
-from eth_abi.grammar import parse
 from telebot import types
 import time
 import random
