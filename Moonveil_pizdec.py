@@ -9,12 +9,11 @@ from peewee import *
 from datetime import date
 import calendar
 import threading
-
+from web3 import Web3
 
 Token = '7734870298:AAHcEohsz-0fdZRKndROLTLUcnWIS1vwuA0'
 root = telebot.TeleBot(Token)
 
-# chat_member = root.get_chat_member(message_id, message_id).user.username
 chat = -1002448845652
 thread_id = 109
 
@@ -24,6 +23,9 @@ db = SqliteDatabase('fof.sqlite')
 def randomfr(username):
     lista = [f'👍 @{username}, твой лимит восстановлен – запрашивай токены снова.',f'✨ @{username}, лимит пополнен, можешь снова брать токены.',f'✅ @{username}, лимит обновлён, жми на запрос токенов.',f'🚀 @{username}, лимит восстановлен – пора за новыми токенами!',f'🎉 @{username}, лимит токенов вернулся, запроси их прямо сейчас.']
     return lista[random.randrange(0, len(lista))]
+
+def web3(address):
+    return str(Web3.to_checksum_address(address))
 
 class MoonveilFaucet:
     def __init__(
@@ -154,7 +156,6 @@ prox = file.readline()
 db.create_tables([Person, Timeframe])
 
 
-
 @root.message_handler(commands=['leaderboard'])
 def leaderboard2(message):
     try:
@@ -172,7 +173,8 @@ def address(message):
         message_id = message.from_user.id
         print(message_id)
         address = message.text
-        result = MoonveilFaucet(proxy=prox, address=str(address))
+        trueadd = web3(str(address))
+        result = MoonveilFaucet(proxy=prox, address=trueadd)
         more = result.classic()
         if more != 'invalid address':
             if more.split()[0] == "Txhash:":
