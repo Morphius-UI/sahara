@@ -1,6 +1,5 @@
 import requests
 import telebot
-from eth_abi.grammar import parse
 from telebot import types
 import time
 import random
@@ -10,20 +9,25 @@ from peewee import *
 from datetime import date
 import calendar
 import threading
-
+from web3 import Web3
 
 Token = '7874201562:AAHhaTJUclkYsaPMQshtt5TUaCB_BlBsnPY'
 root = telebot.TeleBot(Token)
 
 # chat_member = root.get_chat_member(message_id, message_id).user.username
-
+chat = -1002364115755
+thread_id = 12494
 
 k = 0
 db = SqliteDatabase('fof.sqlite')
 
 def randomfr(username):
     lista = [f'👍 @{username}, your limit has been restored - requesting tokens again.',f'✨ @{username}, limit replenished, you can take tokens again.',f'✅ @{username}, limit refreshed, initiating token request.',f'🚀 @{username}, limit restored – time for new tokens!',f'🎉 @{username}, token limit back, requesting them right now!']
-    return lista[random.randrange(0, len(lista)+1)]
+    return lista[random.randrange(0, len(lista))]
+
+def web3(address):
+    return str(Web3.to_checksum_address(address))
+
 
 class MoonveilFaucet:
     def __init__(
@@ -78,6 +82,14 @@ class research:
         q = Person.delete().where(Person.userId == userId)
         q.execute()
         Person.create(userId=userId, lastsend=calendar.timegm(time.gmtime()),nextsend=calendar.timegm(time.gmtime()) + 86400, point=point+1)
+    def povrors(userId):
+        h = []
+        for person in Person.select().where(Person.userId==userId):
+            h.append(person.userId)
+            if len(h) > 1:
+                obj = Person.get(Person.userId == userId)
+                obj.delete_instance()
+
 
 
 class Person(Model):
@@ -134,7 +146,7 @@ def print_numbers():
             if user.nextsend <= calendar.timegm(time.gmtime()):
                 UsrInfo = root.get_chat_member(userId, userId).user.username
                 text = randomfr(UsrInfo)
-                root.send_message(userId, f"{text}")
+                root.send_message(chat, f"{text}", message_thread_id=thread_id)
                 q = Timeframe.delete().where(Timeframe.userId == userId)
                 q.execute()
         time.sleep(60)
@@ -154,7 +166,7 @@ db.connect()
 def leaderboard2(message):
     try:
         h = leaderboard1(message)
-        root.reply_to(message, f'🏆<b>Leaderboard:</b>\n{h}', parse_mode='HTML')
+        root.reply_to(message, f'🔥<b>Leaderboard:</b>\n{h}', parse_mode='HTML')
     except Exception as e:
         print(e)
 
@@ -166,33 +178,39 @@ def address(message):
         message_id = message.from_user.id
         print(message_id)
         address = message.text
-        result = MoonveilFaucet(proxy=prox, address=str(address))
-        more = result.classic()
-        Person.create(userId=int(message_id), lastsend=calendar.timegm(time.gmtime()),
-                      nextsend=calendar.timegm(time.gmtime()) + 86400, point=1)
-        if more != 'invalid address':
-            if more.split()[0] == "Txhash:":
-                if research.reserch_user(message_id) == None:
-                    Person.create(userId=int(message_id), lastsend=calendar.timegm(time.gmtime()),
-                                  nextsend=calendar.timegm(time.gmtime()) + 86400, point=1)
-                    Timeframe.create(lastsend=calendar.timegm(time.gmtime()),
-                                     nextsend=calendar.timegm(time.gmtime()) + 86400, userId=int(message_id))
-                    root.reply_to(message, f"<b>✅ Tokens successfully sent to the specified address!</b>\n\n Transaction:<a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>", parse_mode='HTML')
-
-                else:
-                    if research.nextdata(message_id) <= calendar.timegm(time.gmtime()):
-                        research.delandcreat(message_id)
-                        root.reply_to(message,
-                                      f"<b>✅ Tokens successfully sent to the specified address!</b>\n\n Transaction:<a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>",
-                                      parse_mode='HTML')
+        trueadd = web3(str(address))
+        for i in range(3):
+            result = MoonveilFaucet(proxy=prox, address=trueadd)
+            more = result.classic()
+            if more != 'invalid address':
+                if more.split()[0] == "Txhash:":
+                    if research.reserch_user(message_id) == None:
+                        Person.create(userId=int(message_id), lastsend=calendar.timegm(time.gmtime()),
+                                      nextsend=calendar.timegm(time.gmtime()) + 86400, point=1)
+                        Timeframe.create(lastsend=calendar.timegm(time.gmtime()),
+                                         nextsend=calendar.timegm(time.gmtime()) + 86400, userId=int(message_id))
+                        research.povrors(message_id)
+                        root.reply_to(message, f"<b>✅ Tokens successfully sent to the specified address!</b>\n\nTransaction: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>\n\n<b>💎 Requests: {str(research.reserch_user(message_id))}</b>", parse_mode='HTML')
+                        break
                     else:
-                        root.reply_to(message,
-                                      f"<b>✅ Tokens successfully sent to the specified address!</b>\n\n Transaction:<a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>",
-                                      parse_mode='HTML')
+                        if research.nextdata(message_id) <= calendar.timegm(time.gmtime()):
+                            research.delandcreat(message_id)
+                            research.povrors(message_id)
+                            root.reply_to(message,
+                                          f"<b>✅ Tokens successfully sent to the specified address!</b>\n\nTransaction: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>\n\n<b>💎 Requests: {str(research.reserch_user(message_id))}</b>",
+                                          parse_mode='HTML')
+                            break
+                        else:
+                            research.povrors(message_id)
+                            root.reply_to(message,
+                                          f"<b>✅ Tokens successfully sent to the specified address!</b>\n\nTransaction: <a href='https://blockscout.testnet.moonveil.gg/tx/{more.split()[1]}'>Moonveil Explorer»</a>\n\n<b>💎 Requests: {str(research.reserch_user(message_id))}</b>",
+                                          parse_mode='HTML')
+                            break
 
-
-
-            elif more.split()[0] == "You":
+                if more.split()[0] != "Txhash":
+                    continue
+        if more != 'invalid address':
+            if more.split()[0] == "You":
                 otvet = re.findall(r'\d+', more.split()[8])
                 if len(otvet) == 3:
                     root.reply_to(message,
