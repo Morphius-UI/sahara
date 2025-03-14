@@ -204,21 +204,26 @@ def address(message):
                             break
                 if more.split()[0] != "Txhash":
                     continue
-
-        elif more.split()[0] == "You":
-            otvet = re.findall(r'\d+', more.split()[8])
-            if len(otvet) == 3:
-                root.reply_to(message,
-                              f"🤷‍♂️ Cегодня вы уже запрашивали токены, пожалуйста вернитесь через <b>{otvet[0]}</b> часа <b>{otvet[1]}</b> минут и заново их запросите.", parse_mode='HTML')
+        if more != 'invalid address':
+            if more.split()[0] == "Txhash:":
+                pass
+            
+            elif more.split()[0] == "You":
+                otvet = re.findall(r'\d+', more.split()[8])
+                if len(otvet) == 3:
+                    root.reply_to(message,
+                                  f"🤷‍♂️ Cегодня вы уже запрашивали токены, пожалуйста вернитесь через <b>{otvet[0]}</b> часа <b>{otvet[1]}</b> минут и заново их запросите.", parse_mode='HTML')
+                else:
+                    root.reply_to(message,
+                                  f"🤷‍♂️ Cегодня вы уже запрашивали токены, пожалуйста вернитесь через <b>{otvet[0]}</b> минут и заново их запросите.", parse_mode='HTML')
+    
+            elif more.split()[0] == "Request":
+                pass
+    
             else:
-                root.reply_to(message,
-                              f"🤷‍♂️ Cегодня вы уже запрашивали токены, пожалуйста вернитесь через <b>{otvet[0]}</b> минут и заново их запросите.", parse_mode='HTML')
-
-        elif more.split()[0] == "Request":
-            pass
-
+                root.reply_to(message, f"🙅‍♂️ <b>Ошибка крана, повторите позже!</b>", parse_mode='HTML')
         else:
-            root.reply_to(message, f"🙅‍♂️ <b>Ошибка крана, повторите позже!</b>", parse_mode='HTML')
+            pass
 
     except Exception as e:
         print(e)
